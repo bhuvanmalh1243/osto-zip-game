@@ -466,7 +466,7 @@ l3 -929 785 -5 785 -5 6 -2885 c6 -3002 8 -3151 49 -3485 11 -88 20 -176 20
   </div>
   <div class="prize"><span class="gift">🎁</span><span>Top 3 finishers each day win <em>exciting Osto hampers</em></span></div>
   <div class="playwrap"><button class="btn" id="startBtn">Tap to play</button></div>
-  <div class="hint">Takes about a minute. 2 attempts per person per day.</div>
+  <div class="hint">Takes about a minute. One entry per person for the whole event — 2 attempts.</div>
 </section>
 
 <!-- FORM 1 -->
@@ -2322,6 +2322,11 @@ l3 -929 785 -5 785 -5 6 -2885 c6 -3002 8 -3151 49 -3485 11 -88 20 -176 20
   <div class="card"><h3>Google Sheet sync URL</h3><div class="f"><input id="aUrl" placeholder="https://script.google.com/macros/s/.../exec"></div>
     <div class="ab"><button class="btn" id="aSave">Save URL</button><button class="btn ghost" id="aTest">Test connection</button></div></div>
   <div class="card"><h3>Today's winners</h3><div id="aWin"></div></div>
+  <div class="card"><h3>Leaderboard</h3><div class="kv" id="aLbInfo"></div>
+    <div class="ab"><button class="btn ghost" id="aLbReset">Reset today's leaderboard</button><button class="btn ghost" id="aLbUndo">Undo reset</button></div></div>
+  <div class="card"><h3>Entry blocks</h3><div class="kv" id="aBlockInfo"></div>
+    <div class="f" style="margin-top:14px"><label>Free one email (mistyped address, staff test)</label><input id="aFree" placeholder="someone@company.com" autocapitalize="off" autocorrect="off"></div>
+    <div class="ab"><button class="btn ghost" id="aFreeBtn">Free this email</button></div></div>
   <div class="card"><h3>Danger zone</h3><div class="kv">Only clears this iPad. Rows already synced stay in the Sheet.</div>
     <div class="ab"><button class="btn ghost" id="aWipe" style="color:#ff9aaa;border-color:#ff9aaa">Delete all local data</button></div></div>
 </section>
@@ -2377,9 +2382,11 @@ async function sync(){
 setInterval(sync,20000);addEventListener('online',sync);addEventListener('offline',()=>$('#net').classList.add('off'));
 
 /* ---------- leaderboard ---------- */
+const lbResets=()=>LS.get('oz_lbreset',{});
 function board(day=dayKey()){
+  const from=lbResets()[day]||0;
   const best={};
-  recs().filter(r=>r.day===day&&r.completed).forEach(r=>{const k=r.email;if(!best[k]||r.time_ms<best[k].time_ms||(r.time_ms===best[k].time_ms&&r.ts<best[k].ts))best[k]=r});
+  recs().filter(r=>r.day===day&&r.completed&&r.ts>=from).forEach(r=>{const k=r.email;if(!best[k]||r.time_ms<best[k].time_ms||(r.time_ms===best[k].time_ms&&r.ts<best[k].ts))best[k]=r});
   return Object.values(best).sort((a,b)=>a.time_ms-b.time_ms||a.ts-b.ts);
 }
 const shortName=n=>{const p=n.trim().split(/\s+/);return p[0]+(p.length>1?' '+p[p.length-1][0]+'.':'')};
@@ -2396,7 +2403,11 @@ let P=null; // current player
 function resetPlayer(){P={answers:{team_size:null,compliance_status:null,frameworks_12mo:[],security_headache:null},consent:false};
   $$('#form1 input').forEach(i=>{i.value='';i.classList.remove('bad')});$('#err1').textContent='';$('#err2').textContent='';
   $('#consent').classList.remove('sel');$$('.chip').forEach(c=>c.classList.remove('sel'))}
-function attemptsUsed(email){return recs().filter(r=>r.day===dayKey()&&r.email===email).length}
+const freed=()=>LS.get('oz_free',{});
+function myRecs(email){const f=freed()[email]||0;return recs().filter(r=>r.email===email&&r.ts>f)}
+function attemptsUsed(email){return myRecs(email).length}
+function playedDays(email){return [...new Set(myRecs(email).map(r=>r.day))].sort()}
+function prettyDay(k){const a=k.split('-').map(Number);return new Date(a[0],a[1]-1,a[2]).toLocaleDateString('en-US',{month:'short',day:'numeric'})}
 $('#startBtn').onclick=()=>{resetPlayer();show('form1');setTimeout(()=>$('#fName').focus(),250)};
 $$('[data-home]').forEach(b=>b.onclick=()=>{stopGame();show('home')});
 const EMAIL=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -2406,7 +2417,12 @@ $('#next1').onclick=()=>{
   const eok=EMAIL.test(v.email);$('#fEmail').classList.toggle('bad',!eok);
   if(bad.length||!eok){$('#err1').textContent=!eok&&!bad.length?'Please enter a valid email.':'Please fill in the highlighted fields.';return}
   const used=attemptsUsed(v.email);
-  if(used>=MAX_ATTEMPTS){$('#err1').textContent='You have used both attempts today. Come back tomorrow!';return}
+  if(used>=MAX_ATTEMPTS){
+    const ds=playedDays(v.email);
+    $('#err1').textContent = ds.includes(dayKey())
+      ? 'This email has already used both attempts. It is one entry per person for the whole event.'
+      : 'This email already played on '+prettyDay(ds[0])+'. It is one entry per person for the whole event.';
+    return}
   Object.assign(P,v);
   const prev=recs().filter(r=>r.email===v.email).pop();
   if(prev){ // returning player: skip survey
@@ -2526,15 +2542,24 @@ let taps=0,tapT;$('#logoTap').onclick=()=>{taps++;clearTimeout(tapT);tapT=setTim
 function openAdmin(){const a=recs(),q=LS.get('oz_q',[]),b=board();
   $('#aStat').innerHTML=`Today: <b>${dayKey()}</b> (grid ${layoutIdx()+1} of 3)<br>Plays today: <b>${a.filter(r=>r.day===dayKey()).length}</b> · Unique players today: <b>${new Set(a.filter(r=>r.day===dayKey()).map(r=>r.email)).size}</b><br>All records on this iPad: <b>${a.length}</b><br>Waiting to sync: <b>${q.length}</b> · Online: <b>${navigator.onLine?'yes':'no'}</b> · Sheet URL: <b>${sheetUrl()?'set':'NOT SET'}</b>`;
   $('#aUrl').value=sheetUrl();
+  const rAt=lbResets()[dayKey()], nFreed=Object.keys(freed()).length;
+  $('#aLbInfo').innerHTML=`Showing finishers since: <b>${rAt?new Date(rAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'start of day'}</b><br>On the board now: <b>${b.length}</b><br>Resetting only hides times from the board — every lead is kept and nobody gets extra attempts.`;
+  $('#aBlockInfo').innerHTML=`One entry per email for the whole event (${MAX_ATTEMPTS} attempts).<br>Emails blocked from re-entry: <b>${new Set(a.map(r=>r.email)).size}</b> · Freed so far: <b>${nFreed}</b>`;
   $('#aWin').innerHTML=b.length?b.slice(0,3).map((r,i)=>`<div class="lr t3"><div class="n">${i+1}</div><div class="nm">${esc(r.name)}<small>${esc(r.email)} · ${esc(r.phone||'no phone')} · ${esc(r.company)}</small></div><div class="tm">${fmt(r.time_ms)}</div></div>`).join(''):'<div class="empty">No finishers yet.</div>';
   show('admin')}
+$('#aLbReset').onclick=()=>{if(!confirm("Reset today's leaderboard?\n\nTimes stop showing on the board. All leads are kept and nobody gets extra attempts."))return;
+  const m=lbResets();m[dayKey()]=Date.now();LS.set('oz_lbreset',m);toast('Leaderboard reset');openAdmin()};
+$('#aLbUndo').onclick=()=>{const m=lbResets();if(!(dayKey() in m)){toast('Nothing to undo');return}delete m[dayKey()];LS.set('oz_lbreset',m);toast('Reset undone');openAdmin()};
+$('#aFreeBtn').onclick=()=>{const e=$('#aFree').value.trim().toLowerCase();
+  if(!e){toast('Enter an email first');return}
+  const f=freed();f[e]=Date.now();LS.set('oz_free',f);$('#aFree').value='';toast('Freed '+e);openAdmin()};
 $('#aSave').onclick=()=>{LS.set('oz_url',$('#aUrl').value.trim());toast('Saved');sync();openAdmin()};
 $('#aSync').onclick=async()=>{await sync();setTimeout(openAdmin,1500);toast('Syncing…')};
 $('#aTest').onclick=async()=>{try{const r=await fetch(($('#aUrl').value.trim()||sheetUrl())+'?ping=1');const j=await r.json();toast(j.ok?'Connected to Sheet ✓':'Unexpected reply')}catch(e){toast('Could not reach the Sheet')}};
 $('#aCsv').onclick=()=>{const cols=['id','timestamp','day','name','email','phone','company','role','team_size','compliance_status','frameworks_12mo','security_headache','consent','category','attempt','time_seconds','completed'];
   const csv=[cols.join(',')].concat(recs().map(r=>cols.map(c=>'"'+String(r[c]??'').replace(/"/g,'""')+'"').join(','))).join('\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='osto-zip-leads-'+dayKey()+'.csv';a.click()};
-$('#aWipe').onclick=()=>{if(LS.get('oz_q',[]).length&&!confirm('Some records have NOT synced yet and will be lost. Continue?'))return;if(prompt('Type DELETE to confirm')==='DELETE'){localStorage.removeItem('oz_recs');localStorage.removeItem('oz_q');toast('Local data cleared');openAdmin()}};
+$('#aWipe').onclick=()=>{if(LS.get('oz_q',[]).length&&!confirm('Some records have NOT synced yet and will be lost. Continue?'))return;if(prompt('Type DELETE to confirm')==='DELETE'){localStorage.removeItem('oz_recs');localStorage.removeItem('oz_q');localStorage.removeItem('oz_lbreset');localStorage.removeItem('oz_free');toast('Local data cleared');openAdmin()}};
 
 
 /* ---------- home how-to animation ---------- */
