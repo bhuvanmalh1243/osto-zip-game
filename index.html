@@ -251,6 +251,22 @@ svg.path{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-
 #admin .kv b{color:#fff}
 .ab{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
 .ab .btn{font-size:15px;padding:12px 18px}
+.cele{position:fixed;inset:0;z-index:200;display:none;place-items:center;background:rgba(10,13,52,.86);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.cele.on{display:grid;animation:celeFade .25s ease-out}
+@keyframes celeFade{from{opacity:0}to{opacity:1}}
+#celeC{position:absolute;inset:0;width:100%;height:100%}
+.celeIn{position:relative;z-index:2;text-align:center;display:flex;flex-direction:column;align-items:center;gap:clamp(6px,1.4vh,16px);padding:6vmin}
+.celeBadge{font-size:min(16vw,17vh,150px);line-height:1;animation:celePop .6s cubic-bezier(.2,1.6,.4,1) both,giftBob 1.1s .6s ease-in-out infinite;transform-origin:50% 85%}
+.celeTag{font-family:Marker,cursive;font-size:min(9.5vw,11vh,104px);line-height:.98;color:var(--mt);
+ text-shadow:0 0 34px rgba(95,214,164,.6),0 0 90px rgba(95,214,164,.3);animation:celePop .55s .12s cubic-bezier(.2,1.7,.4,1) both,celeWob 2.4s .7s ease-in-out infinite}
+.celeTime{font-size:min(8vw,9vh,84px);font-weight:800;letter-spacing:-.04em;font-variant-numeric:tabular-nums;color:#fff;animation:celePop .5s .28s cubic-bezier(.2,1.6,.4,1) both}
+.celeSub{font-size:min(2.2vw,2.7vh,23px);font-weight:800;color:var(--in);background:var(--pk);border-radius:99px;
+ padding:min(1.5vh,13px) min(3.4vw,30px);box-shadow:0 8px 34px rgba(212,165,255,.45);
+ animation:celePop .5s .4s cubic-bezier(.2,1.6,.4,1) both}
+.celeHint{font-size:min(1.6vw,2vh,16px);font-weight:700;color:rgba(255,255,255,.4);margin-top:clamp(4px,1.4vh,14px);animation:blink 1.6s 1.2s ease-in-out infinite both}
+@keyframes celePop{from{transform:scale(.3) rotate(-9deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+@keyframes celeWob{0%,100%{transform:rotate(-2.2deg) scale(1)}50%{transform:rotate(2.2deg) scale(1.035)}}
+@keyframes blink{0%,100%{opacity:.25}50%{opacity:.7}}
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%);background:#fff;color:var(--in);font-weight:800;padding:12px 20px;border-radius:12px;display:none;z-index:99}
 .net{position:fixed;right:14px;top:calc(env(safe-area-inset-top) + 10px);width:10px;height:10px;border-radius:50%;background:var(--mt);z-index:50;opacity:.7}
 .net.off{background:#ffb347}
@@ -585,7 +601,7 @@ l3 -929 785 -5 785 -5 6 -2885 c6 -3002 8 -3151 49 -3485 11 -88 20 -176 20
       <span class="mtag">Fastest fingers</span>
       <span class="mic">⚡</span>
       <b>Play &amp; win<br>exciting goodies</b>
-      <small>Straight into the puzzle. No forms.<br>Beat <em>5 seconds</em> and the goodie is yours.</small>
+      <small>Straight into the puzzle. No forms.<br>Beat <em>7 seconds</em> and the goodie is yours.</small>
       <span class="mgo">Let's go →</span>
     </button>
     <button class="mode m2" data-mode="full">
@@ -2472,6 +2488,14 @@ l3 -929 785 -5 785 -5 6 -2885 c6 -3002 8 -3151 49 -3485 11 -88 20 -176 20
   <div class="card"><h3>Danger zone</h3><div class="kv">Only clears this iPad. Rows already synced stay in the Sheet.</div>
     <div class="ab"><button class="btn ghost" id="aWipe" style="color:#ff9aaa;border-color:#ff9aaa">Delete all local data</button></div></div>
 </section>
+<div class="cele" id="cele"><canvas id="celeC"></canvas>
+  <div class="celeIn">
+    <div class="celeBadge">🎁</div>
+    <div class="celeTag">GOODIE<br>UNLOCKED!</div>
+    <div class="celeTime" id="celeTime"></div>
+    <div class="celeSub">Show this to the Osto crew to claim it</div>
+    <div class="celeHint">tap anywhere to continue</div>
+  </div></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -2479,7 +2503,7 @@ const SHEET_URL_DEFAULT = '';
 const ADMIN_PIN = '2026';
 const LAYOUTS = [{"cps": [0, 20, 24, 4, 6, 18, 12]}, {"cps": [20, 0, 4, 24, 16, 8, 12]}, {"cps": [4, 0, 20, 24, 8, 16, 12]}];
 const EVENT_DAYS = {'2026-10-13':0,'2026-10-14':1,'2026-10-15':2};
-const QUICK_TARGETS=[5000,3500];   // attempt 1, attempt 2
+const QUICK_TARGETS=[7000,5000];   // attempt 1, attempt 2
 /* a fresh, solvable grid every single game — same difficulty band as the fixed ones */
 function nbrsN(i,n){const r=(i/n)|0,c=i%n,o=[];if(r>0)o.push(i-n);if(r<n-1)o.push(i+n);if(c>0)o.push(i-1);if(c<n-1)o.push(i+1);return o}
 function turnCount(p){let t=0,pd=null;for(let i=1;i<p.length;i++){const d=p[i]-p[i-1];if(pd!==null&&d!==pd)t++;pd=d}return t}
@@ -2534,7 +2558,7 @@ const pad=n=>String(n).padStart(2,'0');
 function dayKey(){const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
 function layoutIdx(){const k=dayKey();if(k in EVENT_DAYS)return EVENT_DAYS[k];const d=new Date();return Math.floor(d/864e5)%LAYOUTS.length}
 function toast(t){const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',2600)}
-function show(id){$$('.scr').forEach(s=>s.classList.toggle('on',s.id===id));armIdle(id)}
+function show(id){if(id!=='result')closeCele();$$('.scr').forEach(s=>s.classList.toggle('on',s.id===id));armIdle(id)}
 const fmt=ms=>(ms/1000).toFixed(1)+'s';
 
 /* ---------- storage & sync ---------- */
@@ -2783,6 +2807,7 @@ function showQuickResult(q){
   $('#resHead').textContent=q.completed?'Your time':'No worries';
   $('#resTime').textContent=q.completed?fmt(q.time_ms):'DNF';
   if(q.won){
+    setTimeout(()=>celebrate(fmt(q.time_ms)),120);
     $('#resRank').innerHTML='🎉 You beat '+(q.target/1000).toFixed(1)+'s — goodie unlocked!';
     $('#resMsg').textContent='Show this screen to the Osto team to grab your goodie.';
   }else if(q.completed){
@@ -2846,6 +2871,67 @@ $('#aCsv').onclick=()=>{const cols=['id','timestamp','day','name','email','phone
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='osto-zip-leads-'+dayKey()+'.csv';a.click()};
 $('#aWipe').onclick=()=>{if(LS.get('oz_q',[]).length&&!confirm('Some records have NOT synced yet and will be lost. Continue?'))return;if(prompt('Type DELETE to confirm')==='DELETE'){localStorage.removeItem('oz_recs');localStorage.removeItem('oz_q');localStorage.removeItem('oz_lbreset');localStorage.removeItem('oz_free');localStorage.removeItem('oz_allowpersonal');localStorage.removeItem('oz_quick');toast('Local data cleared');openAdmin()}};
 
+
+/* ---------- win celebration ---------- */
+let celeRAF=0;
+function celebrate(timeText){
+  const el=$('#cele'), cv=$('#celeC');
+  if(!el||!cv)return;
+  $('#celeTime').textContent=timeText;
+  el.classList.add('on');
+  let ctx;try{ctx=cv.getContext('2d')}catch(e){return}
+  if(!ctx)return;
+  const dpr=Math.min(devicePixelRatio||1,2);
+  const W=innerWidth,H=innerHeight;
+  cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
+  const COL=['#D4A5FF','#5fd6a4','#ffffff','#ffc46b','#7cc4ff','#ff9aaa'];
+  const P=[];
+  function burst(x,y,n,spread,power){
+    for(let i=0;i<n;i++){
+      const a=spread.lo+Math.random()*(spread.hi-spread.lo), v=power*(.55+Math.random()*.75);
+      P.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,g:.34+Math.random()*.2,
+        s:5+Math.random()*9,r:Math.random()*Math.PI,vr:(Math.random()-.5)*.35,
+        c:COL[(Math.random()*COL.length)|0],sq:Math.random()<.55,life:1,dec:.0045+Math.random()*.004});
+    }
+  }
+  burst(W*0.5,H*0.44,90,{lo:-Math.PI,hi:0},13);
+  burst(0,H,70,{lo:-1.45,hi:-0.42},19);
+  burst(W,H,70,{lo:-Math.PI+0.42,hi:-Math.PI+1.45},19);
+  const rings=[{r:0,a:.85},{r:0,a:.85,d:14},{r:0,a:.85,d:28}];
+  let frame=0;
+  function loop(){
+    frame++;
+    ctx.clearRect(0,0,W,H);
+    rings.forEach((rg,i)=>{
+      if(frame<(rg.d||0))return;
+      rg.r+=11;rg.a-=.012;
+      if(rg.a<=0)return;
+      ctx.beginPath();ctx.arc(W*0.5,H*0.44,rg.r,0,7);
+      ctx.strokeStyle='rgba(95,214,164,'+Math.max(0,rg.a).toFixed(3)+')';ctx.lineWidth=4;ctx.stroke();
+    });
+    for(const p of P){
+      if(p.life<=0)continue;
+      p.vy+=p.g;p.vx*=.995;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;p.life-=p.dec;
+      if(p.y>H+40)p.life=0;
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);
+      ctx.globalAlpha=Math.max(0,Math.min(1,p.life));ctx.fillStyle=p.c;
+      if(p.sq)ctx.fillRect(-p.s/2,-p.s/3,p.s,p.s*.66);
+      else{ctx.beginPath();ctx.arc(0,0,p.s*.45,0,7);ctx.fill()}
+      ctx.restore();
+    }
+    ctx.globalAlpha=1;
+    if(frame<430)celeRAF=requestAnimationFrame(loop);
+  }
+  cancelAnimationFrame(celeRAF);loop();
+  clearTimeout(el._t);el._t=setTimeout(closeCele,5200);
+}
+function closeCele(){
+  const el=$('#cele');if(!el)return;
+  clearTimeout(el._t);cancelAnimationFrame(celeRAF);
+  el.classList.remove('on');
+}
+document.getElementById('cele').addEventListener('pointerdown',closeCele);
+addEventListener('resize',()=>{if($('#cele').classList.contains('on'))closeCele()});
 
 /* ---------- graffiti layer ---------- */
 (function(){
