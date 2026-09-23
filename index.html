@@ -2604,7 +2604,12 @@ $('#aWipe').onclick=()=>{if(LS.get('oz_q',[]).length&&!confirm('Some records hav
 })();
 
 /* ---------- offline ---------- */
-if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js');
+if('serviceWorker' in navigator&&location.protocol.startsWith('http')){
+  navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{
+    try{reg.update()}catch(e){}
+    setInterval(()=>{try{reg.update()}catch(e){}},300000);
+  }).catch(()=>{});
+}
 document.addEventListener('gesturestart',e=>e.preventDefault());
 sync();
 </script>
