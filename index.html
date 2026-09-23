@@ -601,7 +601,7 @@ l3 -929 785 -5 785 -5 6 -2885 c6 -3002 8 -3151 49 -3485 11 -88 20 -176 20
       <span class="mtag">Fastest fingers</span>
       <span class="mic">⚡</span>
       <b>Play &amp; win<br>exciting goodies</b>
-      <small>Straight into the puzzle. No forms.<br>Beat <em>7 seconds</em> and the goodie is yours.</small>
+      <small>Straight into the puzzle. No forms.<br>Beat <em>9 seconds</em> and the goodie is yours.</small>
       <span class="mgo">Let's go →</span>
     </button>
     <button class="mode m2" data-mode="full">
@@ -2503,7 +2503,7 @@ const SHEET_URL_DEFAULT = '';
 const ADMIN_PIN = '2026';
 const LAYOUTS = [{"cps": [0, 20, 24, 4, 6, 18, 12]}, {"cps": [20, 0, 4, 24, 16, 8, 12]}, {"cps": [4, 0, 20, 24, 8, 16, 12]}];
 const EVENT_DAYS = {'2026-10-13':0,'2026-10-14':1,'2026-10-15':2};
-const QUICK_TARGETS=[7000,5000];   // attempt 1, attempt 2
+const QUICK_TARGETS=[9000,7000];   // attempt 1, attempt 2
 /* a fresh, solvable grid every single game — same difficulty band as the fixed ones */
 function nbrsN(i,n){const r=(i/n)|0,c=i%n,o=[];if(r>0)o.push(i-n);if(r<n-1)o.push(i+n);if(c>0)o.push(i-1);if(c<n-1)o.push(i+1);return o}
 function turnCount(p){let t=0,pd=null;for(let i=1;i<p.length;i++){const d=p[i]-p[i-1];if(pd!==null&&d!==pd)t++;pd=d}return t}
