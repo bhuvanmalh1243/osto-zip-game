@@ -1,4 +1,4 @@
-const C='osto-zip-v6';
+const C='osto-zip-v7';
 const F=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png'];
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(C).then(c=>Promise.all(F.map(u=>

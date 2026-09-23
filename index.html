@@ -85,6 +85,8 @@ h1{font-weight:800;letter-spacing:-.035em;line-height:1.02}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .f{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
 .f label{font-size:14px;font-weight:700;color:var(--mut)}
+.f .fnote{font-size:13px;font-weight:600;color:rgba(255,255,255,.42);line-height:1.35;margin-top:1px}
+.f input::placeholder{color:rgba(255,255,255,.28);font-weight:600}
 .f input{font:inherit;font-size:19px;font-weight:600;color:#fff;background:rgba(255,255,255,.07);border:1.5px solid var(--line);border-radius:12px;padding:15px 16px;outline:none;-webkit-user-select:text;user-select:text}
 .f input:focus{border-color:var(--pk)}
 .f input.bad{border-color:#ff7a90}
@@ -819,7 +821,7 @@ l3 -929 785 -5 785 -5 6 -2885 c6 -3002 8 -3151 49 -3485 11 -88 20 -176 20
     <h2>Who's playing?</h2>
     <div class="sub">So we can put you on the leaderboard and reach you if you win.</div>
     <div class="row"><div class="f"><label>Full name *</label><input id="fName" autocomplete="off" autocapitalize="words"></div>
-    <div class="f"><label>Work email *</label><input id="fEmail" type="email" inputmode="email" autocomplete="off" autocapitalize="off" autocorrect="off"></div></div>
+    <div class="f"><label>Work email *</label><input id="fEmail" type="email" inputmode="email" autocomplete="off" autocapitalize="off" autocorrect="off" placeholder="you@yourcompany.com"><small class="fnote">Company address only — Gmail, Yahoo and temp inboxes won't be accepted.</small></div></div>
     <div class="row"><div class="f"><label>Company *</label><input id="fCompany" autocomplete="off"></div>
     <div class="f"><label>Role *</label><input id="fRole" autocomplete="off" placeholder="e.g. Founder, CTO"></div></div>
     <div class="row"><div class="f"><label>Phone</label><input id="fPhone" type="tel" inputmode="tel" autocomplete="off"></div><div></div></div>
@@ -2378,6 +2380,8 @@ l3 -929 785 -5 785 -5 6 -2885 c6 -3002 8 -3151 49 -3485 11 -88 20 -176 20
   <div class="card"><h3>Today's winners</h3><div id="aWin"></div></div>
   <div class="card"><h3>Leaderboard</h3><div class="kv" id="aLbInfo"></div>
     <div class="ab"><button class="btn ghost" id="aLbReset">Reset today's leaderboard</button><button class="btn ghost" id="aLbUndo">Undo reset</button></div></div>
+  <div class="card"><h3>Work email rule</h3><div class="kv" id="aMailInfo"></div>
+    <div class="ab"><button class="btn ghost" id="aMailToggle"></button></div></div>
   <div class="card"><h3>Entry blocks</h3><div class="kv" id="aBlockInfo"></div>
     <div class="f" style="margin-top:14px"><label>Free one email (mistyped address, staff test)</label><input id="aFree" placeholder="someone@company.com" autocapitalize="off" autocorrect="off"></div>
     <div class="ab"><button class="btn ghost" id="aFreeBtn">Free this email</button></div></div>
@@ -2465,11 +2469,39 @@ function prettyDay(k){const a=k.split('-').map(Number);return new Date(a[0],a[1]
 $('#startBtn').onclick=()=>{resetPlayer();show('form1');setTimeout(()=>$('#fName').focus(),250)};
 $$('[data-home]').forEach(b=>b.onclick=()=>{stopGame();show('home')});
 const EMAIL=/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+/* free consumer inboxes — extend this list any time */
+const FREEMAIL=new Set(('gmail.com googlemail.com yahoo.com yahoo.co.in yahoo.in yahoo.co.uk yahoo.ca yahoo.com.au yahoo.fr yahoo.de yahoo.es yahoo.it yahoo.co.jp ymail.com rocketmail.com '+
+'hotmail.com hotmail.co.uk hotmail.fr hotmail.de hotmail.es hotmail.it outlook.com outlook.in outlook.fr outlook.de outlook.es live.com live.co.uk live.in live.ca msn.com passport.com '+
+'aol.com aim.com icloud.com me.com mac.com protonmail.com protonmail.ch proton.me pm.me tutanota.com tutanota.de tuta.io hushmail.com mailfence.com fastmail.com fastmail.fm '+
+'gmx.com gmx.net gmx.de gmx.us mail.com email.com usa.com consultant.com post.com writeme.com mail.ru inbox.ru bk.ru list.ru yandex.com yandex.ru ya.ru zoho.com zohomail.com '+
+'rediffmail.com rediff.com sify.com in.com indiatimes.com bol.net.in vsnl.net vsnl.com airtelmail.in '+
+'web.de t-online.de freenet.de arcor.de orange.fr wanadoo.fr free.fr laposte.net sfr.fr neuf.fr bbox.fr libero.it virgilio.it tiscali.it alice.it tin.it '+
+'btinternet.com virginmedia.com sky.com talktalk.net ntlworld.com blueyonder.co.uk hotmail.ca rogers.com shaw.ca sympatico.ca telus.net bell.net videotron.ca '+
+'comcast.net verizon.net att.net sbcglobal.net bellsouth.net cox.net charter.net earthlink.net juno.com netzero.net optonline.net roadrunner.com rr.com windstream.net frontier.com aol.co.uk '+
+'naver.com daum.net hanmail.net nate.com qq.com foxmail.com 163.com 126.com yeah.net sina.com sina.cn sohu.com aliyun.com '+
+'bigpond.com bigpond.net.au optusnet.com.au iinet.net.au xtra.co.nz singnet.com.sg pacific.net.sg '+
+'terra.com.br uol.com.br bol.com.br ig.com.br globo.com globomail.com hotmail.com.br yahoo.com.br '+
+'seznam.cz centrum.cz wp.pl o2.pl onet.pl interia.pl abv.bg mynet.com hotmail.com.tr').split(' '));
+/* obvious placeholder / filler domains */
+const FAKEDOM=new Set('abc.com xyz.com aaa.com asd.com qwe.com test.com tests.com testing.com example.com example.org example.net domain.com company.com yourcompany.com mycompany.com sample.com demo.com none.com nomail.com noemail.com no.com fake.com dummy.com email.co a.com 123.com'.split(' '));
+/* throwaway / temp-inbox services */
+const TEMPRE=/(mailinator|guerrilla|yopmail|10minute|10minmail|tempmail|temp-mail|tempr\.|tmpmail|throwaway|throwawaymail|trashmail|trash-mail|fakeinbox|fakemail|dispostable|disposable|getnada|nada\.|maildrop|sharklasers|mohmal|spam4|spamgourmet|discard\.|mailnesia|emailondeck|moakt|burnermail|mailsac|grr\.la|mintemail|minuteinbox|inboxbear|mailcatch|spambox|byom\.de|einrot|armyspy|cuvox|dayrep|fleckens|gustr|jourrapide|rhyta|superrito|teleworm|vomoto|mvrht|maildim|1secmail|emltmp|linshiyouxiang|mailpoof|dropmail)/i;
+const allowPersonal=()=>LS.get('oz_allowpersonal',false);
+function emailIssue(v){
+  if(!EMAIL.test(v))return 'Please enter a valid email address.';
+  const d=v.split('@').pop();
+  if(!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*\.[a-z]{2,}$/.test(d))return 'That email domain does not look right.';
+  if(FAKEDOM.has(d))return 'Please use your real work email address.';
+  if(TEMPRE.test(d))return 'Temporary inboxes are not accepted. Please use your work email.';
+  if(!allowPersonal()&&FREEMAIL.has(d))return 'Work email only, please — '+d+' is a personal inbox. Use your company address.';
+  return '';
+}
 $('#next1').onclick=()=>{
   const v={name:$('#fName').value.trim(),email:$('#fEmail').value.trim().toLowerCase(),company:$('#fCompany').value.trim(),role:$('#fRole').value.trim(),phone:$('#fPhone').value.trim()};
   let bad=[];[['fName',v.name],['fCompany',v.company],['fRole',v.role]].forEach(([id,x])=>{$('#'+id).classList.toggle('bad',!x);if(!x)bad.push(id)});
-  const eok=EMAIL.test(v.email);$('#fEmail').classList.toggle('bad',!eok);
-  if(bad.length||!eok){$('#err1').textContent=!eok&&!bad.length?'Please enter a valid email.':'Please fill in the highlighted fields.';return}
+  const eIssue=emailIssue(v.email);$('#fEmail').classList.toggle('bad',!!eIssue);
+  if(bad.length){$('#err1').textContent='Please fill in the highlighted fields.';return}
+  if(eIssue){$('#err1').textContent=eIssue;return}
   const used=attemptsUsed(v.email);
   if(used>=MAX_ATTEMPTS){
     const ds=playedDays(v.email);
@@ -2630,9 +2662,12 @@ function openAdmin(){const a=recs(),q=LS.get('oz_q',[]),b=board();
   $('#aUrl').value=sheetUrl();
   const rAt=lbResets()[dayKey()], nFreed=Object.keys(freed()).length;
   $('#aLbInfo').innerHTML=`Showing finishers since: <b>${rAt?new Date(rAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'start of day'}</b><br>On the board now: <b>${b.length}</b><br>Resetting only hides times from the board — every lead is kept and nobody gets extra attempts.`;
+  $('#aMailInfo').innerHTML=`Personal inboxes (Gmail, Yahoo, Outlook…): <b>${allowPersonal()?'ALLOWED':'blocked'}</b><br>Temporary and fake domains are always blocked.`;
+  $('#aMailToggle').textContent=allowPersonal()?'Block personal inboxes again':'Allow personal inboxes';
   $('#aBlockInfo').innerHTML=`One entry per email for the whole event (${MAX_ATTEMPTS} attempts).<br>Emails blocked from re-entry: <b>${new Set(a.map(r=>r.email)).size}</b> · Freed so far: <b>${nFreed}</b>`;
   $('#aWin').innerHTML=b.length?b.slice(0,3).map((r,i)=>`<div class="lr t3"><div class="n">${i+1}</div><div class="nm">${esc(r.name)}<small>${esc(r.email)} · ${esc(r.phone||'no phone')} · ${esc(r.company)}</small></div><div class="tm">${fmt(r.time_ms)}</div></div>`).join(''):'<div class="empty">No finishers yet.</div>';
   show('admin')}
+$('#aMailToggle').onclick=()=>{LS.set('oz_allowpersonal',!allowPersonal());toast(allowPersonal()?'Personal inboxes allowed':'Work email only');openAdmin()};
 $('#aLbReset').onclick=()=>{if(!confirm("Reset today's leaderboard?\n\nTimes stop showing on the board. All leads are kept and nobody gets extra attempts."))return;
   const m=lbResets();m[dayKey()]=Date.now();LS.set('oz_lbreset',m);toast('Leaderboard reset');openAdmin()};
 $('#aLbUndo').onclick=()=>{const m=lbResets();if(!(dayKey() in m)){toast('Nothing to undo');return}delete m[dayKey()];LS.set('oz_lbreset',m);toast('Reset undone');openAdmin()};
@@ -2645,7 +2680,7 @@ $('#aTest').onclick=async()=>{try{const r=await fetch(($('#aUrl').value.trim()||
 $('#aCsv').onclick=()=>{const cols=['id','timestamp','day','name','email','phone','company','role','team_size','compliance_status','frameworks_12mo','security_headache','consent','category','attempt','time_seconds','completed'];
   const csv=[cols.join(',')].concat(recs().map(r=>cols.map(c=>'"'+String(r[c]??'').replace(/"/g,'""')+'"').join(','))).join('\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='osto-zip-leads-'+dayKey()+'.csv';a.click()};
-$('#aWipe').onclick=()=>{if(LS.get('oz_q',[]).length&&!confirm('Some records have NOT synced yet and will be lost. Continue?'))return;if(prompt('Type DELETE to confirm')==='DELETE'){localStorage.removeItem('oz_recs');localStorage.removeItem('oz_q');localStorage.removeItem('oz_lbreset');localStorage.removeItem('oz_free');toast('Local data cleared');openAdmin()}};
+$('#aWipe').onclick=()=>{if(LS.get('oz_q',[]).length&&!confirm('Some records have NOT synced yet and will be lost. Continue?'))return;if(prompt('Type DELETE to confirm')==='DELETE'){localStorage.removeItem('oz_recs');localStorage.removeItem('oz_q');localStorage.removeItem('oz_lbreset');localStorage.removeItem('oz_free');localStorage.removeItem('oz_allowpersonal');toast('Local data cleared');openAdmin()}};
 
 
 /* ---------- home how-to animation ---------- */
