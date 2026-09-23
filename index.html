@@ -244,6 +244,14 @@ svg.path{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-
 .lr .tm{font-variant-numeric:tabular-nums;font-weight:800}
 .lr.me{background:rgba(212,165,255,.14);border-radius:10px}
 .empty{color:var(--mut);padding:18px 6px;font-weight:600}
+.lbst{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 6px}
+.lbst div{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.09);border-radius:13px;padding:10px 6px;text-align:center}
+.lbst div b{display:block;font-size:21px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+.lbst div small{display:block;font-size:10.5px;color:var(--mut);font-weight:800;text-transform:uppercase;letter-spacing:.7px;margin-top:3px}
+.lbst div.mine{background:rgba(212,165,255,.16);border-color:rgba(212,165,255,.4)}
+.lbst div.mine b{color:var(--in)}
+.livedot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#4ade80;margin-right:5px;vertical-align:1px;animation:lvp 1.5s ease-in-out infinite}
+@keyframes lvp{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(74,222,128,.55)}50%{opacity:.55;box-shadow:0 0 0 6px rgba(74,222,128,0)}}
 /* admin */
 #admin .card{width:100%;max-width:760px;padding:26px;margin-top:18px}
 #admin .card h3{font-size:19px;margin-bottom:12px}
@@ -2168,7 +2176,7 @@ l3 -929 785 -5 785 -5 6 -2885 c6 -3002 8 -3151 49 -3485 11 -88 20 -176 20
   <div class="res">
     <div class="big card"><div id="resHead" style="font-weight:800;color:var(--mut);font-size:16px"></div><div class="t" id="resTime"></div><div class="r" id="resRank"></div><p id="resMsg"></p>
       <div style="display:flex;flex-direction:column;gap:12px;margin-top:22px"><button class="btn" id="again">Use my 2nd attempt</button><button class="btn ghost" id="toFull" style="display:none">Now play for the gift of the day →</button><button class="btn ghost" id="done">Done, next player</button></div></div>
-    <div class="lb card" id="lbCard"><h3>Today's leaderboard <span>Top 3 win exciting hampers</span></h3><div id="lb"></div></div>
+    <div class="lb card" id="lbCard"><h3><span id="lbTitle">Today's leaderboard</span> <span id="lbSub">Top 3 win exciting hampers</span></h3><div class="lbst" id="lbStats" style="display:none"></div><div id="lb"></div></div>
   </div>
 </section>
 
@@ -2599,6 +2607,34 @@ function renderLB(el,meEmail,limit=10){
 }
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
+/* ---------- quick-play live leaderboard ---------- */
+function qLive(day=dayKey()){
+  const from=lbResets()[day]||0;
+  return LS.get('oz_quick',[]).filter(r=>r.day===day&&r.completed&&r.sid&&r.ts>=from);
+}
+function qPlayerNo(day=dayKey()){
+  const seen={};let n=0;
+  LS.get('oz_quick',[]).filter(r=>r.day===day&&r.sid&&r.ts>=(lbResets()[day]||0))
+    .sort((a,b)=>a.ts-b.ts).forEach(r=>{if(!(r.sid in seen))seen[r.sid]=++n});
+  return seen;
+}
+function quickBoard(day=dayKey()){
+  const best={};
+  qLive(day).forEach(r=>{const k=r.sid;if(!best[k]||r.time_ms<best[k].time_ms||(r.time_ms===best[k].time_ms&&r.ts<best[k].ts))best[k]=r});
+  return Object.values(best).sort((a,b)=>a.time_ms-b.time_ms||a.ts-b.ts);
+}
+function renderQLB(el,mySid,limit=8){
+  const b=quickBoard(),nos=qPlayerNo();
+  if(!b.length){el.innerHTML='<div class="empty">No finishers yet. Be the first on the board.</div>';return}
+  const mi=b.findIndex(r=>r.sid===mySid);
+  const rows=b.slice(0,limit).map((r,i)=>row(r,i)).join('')+(mi>=limit?row(b[mi],mi):'');
+  el.innerHTML=rows;
+  function row(r,i){
+    const me=r.sid===mySid, medal=['🥇','🥈','🥉'][i]||'';
+    return `<div class="lr ${i<3?'t3':''} ${me?'me':''}"><div class="n">${i+1}</div><div class="nm">${me?'You':'Player '+(nos[r.sid]||'?')}<small>${medal?medal+' ':''}${esc(r.category)}${r.won?' · beat the clock':''}</small></div><div class="tm">${fmt(r.time_ms)}</div></div>`;
+  }
+}
+
 /* ---------- player flow ---------- */
 let P=null; // current player
 function resetPlayer(){P={answers:{team_size:null,compliance_status:null,frameworks_12mo:[],security_headache:null},consent:false};
@@ -2614,7 +2650,7 @@ document.querySelectorAll('.modeLogo').forEach(e=>{const sv=document.querySelect
 $('#startBtn').onclick=()=>{resetPlayer();show('modeScr')};
 $$('.mode').forEach(b=>b.onclick=()=>{
   MODE=b.dataset.mode;
-  if(MODE==='quick'){QK={attempt:0};resetPlayer();goCats()}
+  if(MODE==='quick'){QK={attempt:0,sid:Date.now().toString(36)+Math.random().toString(36).slice(2,7)};resetPlayer();goCats()}
   else{resetPlayer();show('form1');setTimeout(()=>$('#fName').focus(),250)}
 });
 $$('[data-home]').forEach(b=>b.onclick=()=>{stopGame();MODE='full';show('home')});
@@ -2679,7 +2715,8 @@ $('#next2').onclick=()=>{const a=P.answers;
   if(!P.consent){$('#err2').textContent='Please tick the consent box to be eligible.';return}
   goCats()};
 function goCats(){
-  if(MODE==='quick'){const a=QK.attempt+1;$('#hello').textContent='⚡ Quick play · attempt '+a+' of 2 · beat '+(QUICK_TARGETS[a-1]/1000).toFixed(1)+'s'}
+  if(MODE==='quick'){const a=QK.attempt+1,qb=quickBoard();
+    $('#hello').textContent='⚡ Quick play · attempt '+a+' of 2 · beat '+(QUICK_TARGETS[a-1]/1000).toFixed(1)+'s'+(qb.length?' · 🏆 today’s best '+fmt(qb[0].time_ms):'')}
   else $('#hello').textContent='Hi '+P.name.split(/\s+/)[0]+' · attempt '+(attemptsUsed(P.email)+1)+' of '+MAX_ATTEMPTS;
   show('catScr');
 }
@@ -2787,7 +2824,7 @@ function finish(ok){
   if(MODE==='quick'){
     QK.attempt++;
     const target=QUICK_TARGETS[QK.attempt-1], won=ok&&ms<=target;
-    const q={ts:Date.now(),day:dayKey(),category:G.cat.name,attempt:QK.attempt,time_ms:ok?ms:null,completed:ok,target,won};
+    const q={ts:Date.now(),day:dayKey(),sid:QK.sid,category:G.cat.name,attempt:QK.attempt,time_ms:ok?ms:null,completed:ok,target,won};
     const a=quickRecs();a.push(q);LS.set('oz_quick',a);
     setTimeout(()=>showQuickResult(q),ok?650:0);
     return;
@@ -2803,16 +2840,17 @@ function finish(ok){
 function showQuickResult(q){
   const nextT=QUICK_TARGETS[QK.attempt];
   $('#dayPill').textContent='⚡ Quick play';
-  $('#lbCard').style.display='none';
   $('#resHead').textContent=q.completed?'Your time':'No worries';
   $('#resTime').textContent=q.completed?fmt(q.time_ms):'DNF';
+  const qb=quickBoard(), qr=qb.findIndex(r=>r.sid===QK.sid)+1;
+  const rankLine=qr?(qr===1?' You’re #1 on the live board right now. 🏆':' You’re #'+qr+' of '+qb.length+' on the live board'+(qb[0]?' — '+fmt(qb[0].time_ms)+' is the time to beat.':'.')):'';
   if(q.won){
     setTimeout(()=>celebrate(fmt(q.time_ms)),120);
     $('#resRank').innerHTML='🎉 You beat '+(q.target/1000).toFixed(1)+'s — goodie unlocked!';
-    $('#resMsg').textContent='Show this screen to the Osto team to grab your goodie.';
+    $('#resMsg').textContent='Show this screen to the Osto team to grab your goodie.'+rankLine;
   }else if(q.completed){
     $('#resRank').textContent='So close.';
-    $('#resMsg').textContent='You needed '+(q.target/1000).toFixed(1)+'s'+(nextT?'. One more go — this time beat '+(nextT/1000).toFixed(1)+'s.':'. That was your last attempt.');
+    $('#resMsg').textContent='You needed '+(q.target/1000).toFixed(1)+'s'+(nextT?'. One more go — this time beat '+(nextT/1000).toFixed(1)+'s.':'. That was your last attempt.')+rankLine;
   }else{
     $('#resRank').textContent='Path not finished';
     $('#resMsg').textContent='Fill every square next time'+(nextT?' — beat '+(nextT/1000).toFixed(1)+'s to win.':'.');
@@ -2820,10 +2858,25 @@ function showQuickResult(q){
   $('#again').style.display=(nextT&&!q.won)?'block':'none';
   $('#again').textContent='Try again — beat '+((nextT||0)/1000).toFixed(1)+'s';
   $('#toFull').style.display=q.won?'block':'none';
+  quickLB();
   show('result');
+}
+/* live board on the quick-play result screen: top score, your score, your rank */
+function quickLB(){
+  const b=quickBoard(), mine=b.find(r=>r.sid===QK.sid), rank=b.findIndex(r=>r.sid===QK.sid)+1;
+  $('#lbCard').style.display='';
+  $('#lbTitle').innerHTML='<span class="livedot"></span>Live leaderboard';
+  $('#lbSub').textContent=b.length?b.length+(b.length===1?' player today':' players today'):'Quick play';
+  $('#lbStats').style.display='';
+  $('#lbStats').innerHTML=
+    '<div><b>'+(b.length?fmt(b[0].time_ms):'—')+'</b><small>Top score</small></div>'+
+    '<div class="mine"><b>'+(mine?fmt(mine.time_ms):'—')+'</b><small>Your score</small></div>'+
+    '<div class="mine"><b>'+(rank?'#'+rank:'—')+'</b><small>Your rank</small></div>';
+  renderQLB($('#lb'),QK.sid);
 }
 function showResult(r){
   $('#lbCard').style.display='';$('#toFull').style.display='none';
+  $('#lbTitle').textContent='Today’s leaderboard';$('#lbSub').textContent='Top 3 win exciting hampers';$('#lbStats').style.display='none';
   const b=board(),rank=b.findIndex(x=>x.email===r.email)+1,best=b[rank-1];
   const left=MAX_ATTEMPTS-attemptsUsed(r.email);
   $('#dayPill').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
@@ -2850,7 +2903,7 @@ function openAdmin(){const a=recs(),q=LS.get('oz_q',[]),b=board();
   const rAt=lbResets()[dayKey()], nFreed=Object.keys(freed()).length;
   $('#aLbInfo').innerHTML=`Showing finishers since: <b>${rAt?new Date(rAt).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'start of day'}</b><br>On the board now: <b>${b.length}</b><br>Resetting only hides times from the board — every lead is kept and nobody gets extra attempts.`;
   const qa=quickRecs(),qt=qa.filter(x=>x.day===dayKey());
-  $('#aQuickInfo').innerHTML=`Quick plays today: <b>${qt.length}</b> · Goodies won today: <b>${qt.filter(x=>x.won).length}</b><br>All quick plays on this iPad: <b>${qa.length}</b> · Goodies won: <b>${qa.filter(x=>x.won).length}</b><br>Targets: attempt 1 under <b>${(QUICK_TARGETS[0]/1000).toFixed(1)}s</b>, attempt 2 under <b>${(QUICK_TARGETS[1]/1000).toFixed(1)}s</b>`;
+  $('#aQuickInfo').innerHTML=`Quick plays today: <b>${qt.length}</b> · Goodies won today: <b>${qt.filter(x=>x.won).length}</b><br>All quick plays on this iPad: <b>${qa.length}</b> · Goodies won: <b>${qa.filter(x=>x.won).length}</b><br>Live board today: <b>${quickBoard().length}</b> players${quickBoard().length?` · fastest <b>${fmt(quickBoard()[0].time_ms)}</b>`:''}<br>Targets: attempt 1 under <b>${(QUICK_TARGETS[0]/1000).toFixed(1)}s</b>, attempt 2 under <b>${(QUICK_TARGETS[1]/1000).toFixed(1)}s</b>`;
   $('#aMailInfo').innerHTML=`Personal inboxes (Gmail, Yahoo, Outlook…): <b>${allowPersonal()?'ALLOWED':'blocked'}</b><br>Temporary and fake domains are always blocked.`;
   $('#aMailToggle').textContent=allowPersonal()?'Block personal inboxes again':'Allow personal inboxes';
   $('#aBlockInfo').innerHTML=`One entry per email for the whole event (${MAX_ATTEMPTS} attempts).<br>Emails blocked from re-entry: <b>${new Set(a.map(r=>r.email)).size}</b> · Freed so far: <b>${nFreed}</b>`;
