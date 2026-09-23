@@ -1884,7 +1884,7 @@ l3 -929 785 -5 785 -5 6 -2885 c6 -3002 8 -3151 49 -3485 11 -88 20 -176 20
 
 <!-- QUICK NAME -->
 <section class="scr" id="qname">
-  <div class="top"><div class="logo modeLogo" style="width:92px"></div><button class="btn ghost" data-home style="font-size:15px;padding:10px 16px">Done, next player</button></div>
+  <div class="top"><div class="logo modeLogo" style="width:92px"></div><button class="btn ghost" id="qnHome" style="font-size:15px;padding:10px 16px">Done, next player</button></div>
   <div class="qnWrap">
     <div class="card qnCard">
       <div class="qnLab" id="qnLab">Your time</div>
@@ -2872,7 +2872,12 @@ function askName(q){
   $('#qnLab').textContent=q.completed?'Your time':'That run';
   $('#qnTime').textContent=q.completed?fmt(q.time_ms):'DNF';
   $('#qnHead').textContent=q.won?'🎉 Goodie unlocked!':(q.completed?'Nice run!':'Good try!');
-  $('#qnSub').textContent=q.completed?'Punch in your name to go up on the live leaderboard.':'Punch in your name — you still have a go left.';
+  /* a winner is claiming a physical goodie, so the name is required — no skip out of this screen */
+  $('#qnSub').textContent=q.won?'Punch in your name to claim your goodie and go up on the live leaderboard.'
+    :(q.completed?'Punch in your name to go up on the live leaderboard.':'Punch in your name — you still have a go left.');
+  $('#qnGo').textContent=q.won?'Claim my goodie →':'Put me on the board →';
+  $('#qnSkip').style.display=q.won?'none':'';
+  $('#qnHome').style.display=q.won?'none':'';
   const inp=$('#qnInput');inp.value='';inp.classList.remove('bad');
   show('qname');
   if(q.won)setTimeout(()=>celebrate(fmt(q.time_ms)),140);
@@ -2883,6 +2888,7 @@ function focusWhenClear(el){
   setTimeout(()=>clearInterval(t),12000);
 }
 function qnSubmit(skip){
+  if(skip&&QPEND&&QPEND.won)return;   /* winners can't skip — the goodie needs a name */
   const inp=$('#qnInput');
   const v=skip?'':inp.value.trim().replace(/\s+/g,' ').slice(0,22)
     .replace(/(^|[\s\-'])([a-z])/g,(m,a,b)=>a+b.toUpperCase());
@@ -2896,6 +2902,12 @@ function qnSubmit(skip){
 $('#qnGo').onclick=()=>qnSubmit(false);
 $('#qnSkip').onclick=()=>qnSubmit(true);
 $('#qnInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();qnSubmit(false)}});
+$('#qnHome').onclick=()=>{if(QPEND&&QPEND.won)return;QPEND=null;stopGame();MODE='full';show('home')};
+/* staff escape when a winner walks off without typing: tap the Osto logo 3x on this screen */
+(()=>{const lg=document.querySelector('#qname .modeLogo');if(!lg)return;
+  let n=0,t0=0;
+  lg.addEventListener('pointerdown',()=>{const now=Date.now();n=(now-t0<900)?n+1:1;t0=now;
+    if(n>=3){n=0;QPEND=null;stopGame();MODE='full';show('home');toast('Reset for the next player')}});})();
 
 function showQuickResult(q,skipCele){
   const nextT=QUICK_TARGETS[QK.attempt];
