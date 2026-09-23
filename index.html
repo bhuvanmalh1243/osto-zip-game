@@ -32,9 +32,35 @@ h1{font-weight:800;letter-spacing:-.035em;line-height:1.02}
 #home h1{font-size:clamp(52px,9vw,104px)}
 #home h1 em{font-style:normal;color:var(--pk)}
 #home p{font-size:25px;color:var(--mut);max-width:620px;line-height:1.4}
-.prize{display:inline-flex;gap:10px;align-items:center;font-weight:800;font-size:21px;color:var(--mt);border:1.5px dashed rgba(95,214,164,.55);border-radius:99px;padding:10px 20px}
-.demo{display:grid;grid-template-columns:repeat(3,64px);gap:6px;margin:6px auto}
-.demo div{height:64px;border-radius:12px;background:rgba(255,255,255,.06)}
+#home{gap:20px}
+/* prize badge */
+.prize{position:relative;overflow:hidden;display:inline-flex;gap:12px;align-items:center;font-weight:800;font-size:clamp(20px,2.6vw,29px);letter-spacing:-.02em;color:#fff;
+ background:linear-gradient(100deg,rgba(95,214,164,.20),rgba(212,165,255,.20));border:2px solid rgba(95,214,164,.75);border-radius:99px;padding:14px 30px;
+ animation:prizePop 2.8s ease-in-out infinite}
+.prize em{font-style:normal;color:var(--mt)}
+.prize .gift{font-size:1.15em;display:inline-block;animation:giftBob 1.5s ease-in-out infinite;transform-origin:50% 85%}
+.prize::after{content:'';position:absolute;top:0;bottom:0;width:38%;left:-45%;
+ background:linear-gradient(100deg,transparent,rgba(255,255,255,.34),transparent);animation:shine 2.8s ease-in-out infinite}
+@keyframes prizePop{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(95,214,164,.34)}50%{transform:scale(1.035);box-shadow:0 0 0 14px rgba(95,214,164,0)}}
+@keyframes giftBob{0%,100%{transform:translateY(0) rotate(-7deg)}50%{transform:translateY(-5px) rotate(7deg)}}
+@keyframes shine{0%{left:-45%}55%,100%{left:118%}}
+/* play button */
+.playwrap{position:relative;display:inline-block}
+.playwrap::before{content:'';position:absolute;inset:-7px;border-radius:24px;border:2.5px solid var(--pk);animation:ring 2.1s ease-out infinite;pointer-events:none}
+@keyframes ring{0%{transform:scale(1);opacity:.6}72%{transform:scale(1.13);opacity:0}100%{opacity:0}}
+#startBtn{font-size:26px;padding:22px 54px;box-shadow:0 12px 44px rgba(212,165,255,.38);animation:breathe 2.1s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+/* how-to demo */
+.howto{display:flex;flex-direction:column;align-items:center;gap:13px}
+.demo{position:relative;width:min(46vw,300px);aspect-ratio:1;border-radius:18px;background:rgba(255,255,255,.04);border:2px solid var(--line);overflow:hidden}
+.dgrid{position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr)}
+.dgrid .dc{position:relative;border-right:1px solid rgba(255,255,255,.16);border-bottom:1px solid rgba(255,255,255,.16);display:grid;place-items:center;transition:background .18s}
+.dgrid .dc.on{background:rgba(212,165,255,.20)}
+.dgrid .dn{width:54%;aspect-ratio:1;border-radius:50%;background:var(--pk);color:var(--in);font-weight:800;font-size:clamp(13px,2.4vw,20px);display:grid;place-items:center;z-index:3;transition:background .18s,color .18s,transform .18s}
+.dgrid .dc.hit .dn{background:var(--mt);color:var(--in);transform:scale(1.12)}
+.dsvg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+.howcap{font-size:clamp(15px,1.8vw,20px);font-weight:700;color:var(--mut);letter-spacing:-.01em}
+.howcap b{color:#fff}
 /* form */
 .form{width:100%;max-width:760px;margin-top:22px;padding:30px}
 .form h2{font-size:30px;font-weight:800;letter-spacing:-.03em;margin-bottom:6px}
@@ -68,19 +94,27 @@ h1{font-weight:800;letter-spacing:-.035em;line-height:1.02}
 #game{padding-top:calc(env(safe-area-inset-top) + 18px)}
 .hud{width:100%;max-width:980px;display:flex;align-items:center;justify-content:space-between;gap:16px}
 .timer{font-variant-numeric:tabular-nums;font-weight:800;font-size:40px;letter-spacing:-.02em;min-width:130px;text-align:right}
-.seq{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:16px 0 14px;max-width:980px}
-.seq span{font-size:15px;font-weight:800;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.07);color:var(--mut);display:flex;align-items:center;gap:6px}
-.seq span.done{background:rgba(95,214,164,.18);color:var(--mt)}
-.seq span.next{background:var(--pk);color:var(--in)}
-.seq em{font-style:normal;color:rgba(255,255,255,.4)}
+.seq{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:7px;margin:14px 0 12px;max-width:980px}
+.seq span{font-size:15px;font-weight:800;padding:7px 13px 7px 7px;border-radius:99px;background:rgba(255,255,255,.07);color:var(--mut);display:flex;align-items:center;gap:8px;border:1.5px solid transparent;transition:background .18s,color .18s}
+.seq span i{font-style:normal;font-size:13px;font-weight:800;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.14);color:#fff;flex:none}
+.seq span.done{background:rgba(95,214,164,.16);color:var(--mt)}
+.seq span.done i{background:var(--mt);color:var(--in)}
+.seq span.next{background:var(--pk);color:var(--in);border-color:#fff;animation:sqp 1.25s ease-in-out infinite}
+.seq span.next i{background:var(--in);color:var(--pk)}
+@keyframes sqp{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.5)}50%{box-shadow:0 0 0 7px rgba(255,255,255,0)}}
+.seq em{font-style:normal;color:rgba(255,255,255,.32);font-weight:800}
+.seqhd{font-size:13px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-top:14px}
 .boardwrap{position:relative;touch-action:none}
-.board{display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(6,1fr);gap:0;position:relative;border-radius:18px;overflow:hidden;background:rgba(255,255,255,.04);border:2px solid var(--line)}
+.board{display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(5,1fr);gap:0;position:relative;border-radius:18px;overflow:hidden;background:rgba(255,255,255,.04);border:2px solid var(--line)}
 .cell{border-right:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);position:relative;display:grid;place-items:center}
-.cell.p{background:rgba(212,165,255,.16)}
+.cell.p{background:rgba(212,165,255,.22)}
 .cp{position:absolute;inset:9%;border-radius:14px;background:var(--nv);border:2.5px solid var(--pk);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;z-index:3;padding:2px}
-.cp b{font-size:clamp(10px,1.45vmin,15px);font-weight:800;line-height:1.05;letter-spacing:-.02em;word-break:break-word}
-.cp i{font-style:normal;font-size:10px;font-weight:800;opacity:.6;margin-bottom:2px}
+.cp b{font-size:clamp(11px,1.9vmin,20px);font-weight:800;line-height:1.05;letter-spacing:-.02em;word-break:break-word}
+.cp i{font-style:normal;font-size:clamp(11px,1.6vmin,16px);font-weight:800;line-height:1;width:clamp(20px,3vmin,30px);height:clamp(20px,3vmin,30px);border-radius:50%;display:grid;place-items:center;background:var(--pk);color:var(--in);margin-bottom:5px}
 .cp.hit{background:var(--mt);border-color:var(--mt);color:var(--in)}
+.cp.hit i{background:var(--in);color:var(--mt)}
+.cp.next{border-color:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.22);animation:cpp 1.25s ease-in-out infinite}
+@keyframes cpp{0%,100%{box-shadow:0 0 0 4px rgba(255,255,255,.18)}50%{box-shadow:0 0 0 11px rgba(255,255,255,.05)}}
 .cp.shake{animation:sh .35s}
 @keyframes sh{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 svg.path{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
@@ -423,9 +457,15 @@ l3 -929 785 -5 785 -5 6 -2885 c6 -3002 8 -3151 49 -3485 11 -88 20 -176 20
 </g></svg></div>
   <div class="pill">TechCrunch Disrupt 2026 · Booth CY9</div>
   <h1>Zip through the<br><em>tech stack.</em></h1>
-  <p>Connect every square in one path, hitting each step in the right order. Fastest time today wins.</p>
-  <div class="prize">🎁 Top 3 each day win an Osto hamper</div>
-  <button class="btn" id="startBtn" style="font-size:26px;padding:22px 54px;margin-top:6px">Tap to play</button>
+  <div class="howto">
+    <div class="demo" id="demo">
+      <div class="dgrid" id="dgrid"></div>
+      <svg class="dsvg" id="dsvg" viewBox="0 0 400 400" preserveAspectRatio="none"></svg>
+    </div>
+    <div class="howcap"><b>One</b> line · <b>every</b> square · <b>1&nbsp;→&nbsp;2&nbsp;→&nbsp;3&nbsp;→&nbsp;4</b> in order</div>
+  </div>
+  <div class="prize"><span class="gift">🎁</span><span>Top 3 finishers each day win <em>exciting Osto hampers</em></span></div>
+  <div class="playwrap"><button class="btn" id="startBtn">Tap to play</button></div>
   <div class="hint">Takes about a minute. 2 attempts per person per day.</div>
 </section>
 
@@ -1663,9 +1703,10 @@ l3 -929 785 -5 785 -5 6 -2885 c6 -3002 8 -3151 49 -3485 11 -88 20 -176 20
 50 15 10 0 56 8 103 19 254 59 262 60 685 95 91 7 407 -3 590 -19z"/>
 </g></svg></div><div style="font-weight:800;font-size:20px;margin-top:8px" id="gCat"></div></div>
   <div class="timer" id="timer">0.0s</div></div>
+  <div class="seqhd">Touch these in order</div>
   <div class="seq" id="seq"></div>
-  <div class="boardwrap" id="bw"><div class="board" id="board"></div><svg class="path" id="svg" viewBox="0 0 600 600" preserveAspectRatio="none"></svg><div class="count" id="count">3</div></div>
-  <div class="hint" id="ghint">Start on <b id="firstTerm"></b>, drag through every square, finish on the last step.</div>
+  <div class="boardwrap" id="bw"><div class="board" id="board"></div><svg class="path" id="svg" viewBox="0 0 500 500" preserveAspectRatio="none"></svg><div class="count" id="count">3</div></div>
+  <div class="hint" id="ghint"></div>
   <div class="gbtns"><button class="btn ghost" id="undo">Undo</button><button class="btn ghost" id="clear">Restart path</button><button class="btn ghost" id="giveup">Give up</button></div>
 </section>
 
@@ -1972,7 +2013,7 @@ l3 -929 785 -5 785 -5 6 -2885 c6 -3002 8 -3151 49 -3485 11 -88 20 -176 20
   <div class="res">
     <div class="big card"><div id="resHead" style="font-weight:800;color:var(--mut);font-size:16px"></div><div class="t" id="resTime"></div><div class="r" id="resRank"></div><p id="resMsg"></p>
       <div style="display:flex;flex-direction:column;gap:12px;margin-top:22px"><button class="btn" id="again">Use my 2nd attempt</button><button class="btn ghost" id="done">Done, next player</button></div></div>
-    <div class="lb card"><h3>Today's leaderboard <span>Top 3 win a hamper</span></h3><div id="lb"></div></div>
+    <div class="lb card"><h3>Today's leaderboard <span>Top 3 win exciting hampers</span></h3><div id="lb"></div></div>
   </div>
 </section>
 
@@ -2289,7 +2330,7 @@ l3 -929 785 -5 785 -5 6 -2885 c6 -3002 8 -3151 49 -3485 11 -88 20 -176 20
 <script>
 const SHEET_URL_DEFAULT = '';
 const ADMIN_PIN = '2026';
-const LAYOUTS = [{"cps": [7, 8, 30, 33, 3, 22, 34]}, {"cps": [31, 18, 8, 32, 17, 15, 27]}, {"cps": [26, 18, 0, 11, 28, 20, 10]}];
+const LAYOUTS = [{"cps": [0, 20, 24, 4, 6, 18, 12]}, {"cps": [20, 0, 4, 24, 16, 8, 12]}, {"cps": [4, 0, 20, 24, 8, 16, 12]}];
 const EVENT_DAYS = {'2026-10-13':0,'2026-10-14':1,'2026-10-15':2};
 const CATS = [
  {id:'cyber', ic:'🛡️', name:'Cybersecurity', desc:'The attack kill chain', steps:['Recon','Weaponize','Deliver','Exploit','Install','Control','Exfiltrate']},
@@ -2304,7 +2345,7 @@ const Q = {
  frameworks_12mo:['SOC 2','ISO 27001','HIPAA','GDPR','DPDP','PCI DSS','None'],
  security_headache:['Audits & questionnaires','Cloud security','Laptops & devices','Too many tools','No security team','Something else'],
 };
-const MAX_ATTEMPTS=2, N=6;
+const MAX_ATTEMPTS=2, N=5;
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const LS={get:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 const pad=n=>String(n).padStart(2,'0');
@@ -2393,10 +2434,11 @@ let G=null;
 function startGame(cat){
   const L=LAYOUTS[layoutIdx()];
   G={cat,cps:L.cps,path:[],next:0,t0:0,run:false,done:false,raf:0};
-  $('#gCat').textContent=cat.ic+' '+cat.name;$('#firstTerm').textContent=cat.steps[0];
+  $('#gCat').textContent=cat.ic+' '+cat.name;
   const bd=$('#board');bd.innerHTML='';
   for(let i=0;i<N*N;i++){const d=document.createElement('div');d.className='cell';d.dataset.i=i;const k=G.cps.indexOf(i);
-    if(k>=0)d.innerHTML=`<div class="cp" data-k="${k}"><b>${esc(cat.steps[k])}</b></div>`;bd.appendChild(d)}
+    if(k>=0)d.innerHTML=`<div class="cp" data-k="${k}"><i>${k+1}</i><b>${esc(cat.steps[k])}</b></div>`;bd.appendChild(d)}
+  $('#svg').setAttribute('viewBox','0 0 '+(N*100)+' '+(N*100));
   sizeBoard();drawSeq();drawPath();$('#timer').textContent='0.0s';
   show('game');
   const c=$('#count');c.style.display='grid';let n=3;c.textContent=n;
@@ -2406,12 +2448,21 @@ function sizeBoard(){const s=Math.min(innerWidth-64,innerHeight-330,760);$('#bw'
 addEventListener('resize',()=>{if(G)sizeBoard()});
 function tick(){if(!G||!G.run)return;$('#timer').textContent=fmt(performance.now()-G.t0);G.raf=requestAnimationFrame(tick)}
 function stopGame(){if(G){G.run=false;cancelAnimationFrame(G.raf)}}
-function drawSeq(){$('#seq').innerHTML=G.cat.steps.map((s,k)=>`<span class="${k<G.next?'done':k===G.next?'next':''}">${esc(s)}</span>`).join('<em style="align-self:center;opacity:.4;font-weight:800">→</em>')}
+function drawSeq(){
+  $('#seq').innerHTML=G.cat.steps.map((s,k)=>{
+    const st=k<G.next?'done':k===G.next?'next':'';
+    return `<span class="${st}"><i>${k<G.next?'✓':(k+1)}</i>${esc(s)}</span>`;
+  }).join('<em>→</em>');
+  const left=N*N-G.path.length, nx=G.next<7?G.cat.steps[G.next]:null, h=$('#ghint');
+  if(!G.path.length) h.innerHTML=`Start on <b>1 · ${esc(G.cat.steps[0])}</b> — then fill <b>every</b> square, touching 1 → 7 in order.`;
+  else if(nx) h.innerHTML=`Next: <b>${G.next+1} · ${esc(nx)}</b> &nbsp;·&nbsp; <b>${left}</b> square${left===1?'':'s'} still to fill`;
+  else h.innerHTML=`All 7 done — now fill the last <b>${left}</b> square${left===1?'':'s'} and end on <b>${esc(G.cat.steps[6])}</b>.`;
+}
 function drawPath(){
   $$('.cell').forEach(c=>c.classList.toggle('p',G.path.includes(+c.dataset.i)));
-  $$('.cp').forEach(c=>c.classList.toggle('hit',+c.dataset.k<G.next));
+  $$('.cp').forEach(c=>{const k=+c.dataset.k;c.classList.toggle('hit',k<G.next);c.classList.toggle('next',k===G.next)});
   const pts=G.path.map(i=>{const r=Math.floor(i/N),k=i%N;return[(k+.5)*100,(r+.5)*100]});
-  $('#svg').innerHTML=pts.length?`<polyline points="${pts.map(p=>p.join(',')).join(' ')}" fill="none" stroke="#D4A5FF" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>`+(pts.length===1?`<circle cx="${pts[0][0]}" cy="${pts[0][1]}" r="16" fill="#D4A5FF"/>`:''):'';
+  $('#svg').innerHTML=pts.length?`<polyline points="${pts.map(p=>p.join(',')).join(' ')}" fill="none" stroke="#D4A5FF" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>`+(pts.length===1?`<circle cx="${pts[0][0]}" cy="${pts[0][1]}" r="16" fill="#D4A5FF"/>`:''):'';
   drawSeq();
 }
 const adj=(a,b)=>{const ra=Math.floor(a/N),ka=a%N,rb=Math.floor(b/N),kb=b%N;return Math.abs(ra-rb)+Math.abs(ka-kb)===1};
@@ -2458,7 +2509,7 @@ function showResult(r){
   $('#resHead').textContent=r.completed?'Your time':'No worries';
   $('#resTime').textContent=r.completed?fmt(r.time_ms):'DNF';
   if(rank){$('#resRank').textContent=rank<=3?`You're #${rank} today! 🎁`:`You're #${rank} today`;
-    $('#resMsg').textContent=(best&&best.id!==r.id?`Your best today is ${fmt(best.time_ms)}. `:'')+(rank<=3?'Stay in the top 3 until end of day to win a hamper.':`${fmt(b[Math.min(2,b.length-1)].time_ms)} gets you into the top 3.`)}
+    $('#resMsg').textContent=(best&&best.id!==r.id?`Your best today is ${fmt(best.time_ms)}. `:'')+(rank<=3?'Stay in the top 3 until end of day to win an exciting Osto hamper.':`${fmt(b[Math.min(2,b.length-1)].time_ms)} gets you into the top 3.`)}
   else{$('#resRank').textContent='Not on the board yet';$('#resMsg').textContent='Finish the full path to get a time.'}
   $('#again').style.display=left>0?'block':'none';$('#again').textContent='Use my 2nd attempt';
   renderLB($('#lb'),r.email);show('result');
@@ -2484,6 +2535,48 @@ $('#aCsv').onclick=()=>{const cols=['id','timestamp','day','name','email','phone
   const csv=[cols.join(',')].concat(recs().map(r=>cols.map(c=>'"'+String(r[c]??'').replace(/"/g,'""')+'"').join(','))).join('\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='osto-zip-leads-'+dayKey()+'.csv';a.click()};
 $('#aWipe').onclick=()=>{if(LS.get('oz_q',[]).length&&!confirm('Some records have NOT synced yet and will be lost. Continue?'))return;if(prompt('Type DELETE to confirm')==='DELETE'){localStorage.removeItem('oz_recs');localStorage.removeItem('oz_q');toast('Local data cleared');openAdmin()}};
+
+
+/* ---------- home how-to animation ---------- */
+(function(){
+  const DN=4, DPATH=[0,4,8,12,13,14,15,11,7,3,2,1,5,9,10,6], DCP=[0,14,2,6];
+  const grid=document.getElementById('dgrid'), svg=document.getElementById('dsvg');
+  if(!grid||!svg) return;
+  const cells=[];
+  for(let i=0;i<DN*DN;i++){
+    const d=document.createElement('div'); d.className='dc';
+    const k=DCP.indexOf(i);
+    if(k>=0) d.innerHTML='<div class="dn">'+(k+1)+'</div>';
+    grid.appendChild(d); cells.push(d);
+  }
+  const pt=i=>[(i%DN+.5)*100,(Math.floor(i/DN)+.5)*100];
+  let step=0, hold=0, timer=null;
+  function render(n){
+    const drawn=DPATH.slice(0,n);
+    cells.forEach((c,i)=>{
+      c.classList.toggle('on',drawn.includes(i));
+      const k=DCP.indexOf(i);
+      c.classList.toggle('hit',k>=0&&drawn.includes(i));
+    });
+    const pts=drawn.map(pt);
+    svg.innerHTML = pts.length
+      ? '<polyline points="'+pts.map(p=>p.join(',')).join(' ')+'" fill="none" stroke="#D4A5FF" stroke-width="34" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/>'
+        + '<circle cx="'+pts[pts.length-1][0]+'" cy="'+pts[pts.length-1][1]+'" r="20" fill="#fff" opacity=".95"/>'
+      : '';
+  }
+  function frame(){
+    if(hold>0){ hold--; return; }
+    step++;
+    if(step>DPATH.length){ step=0; hold=7; render(0); return; }
+    render(step);
+    if(step===DPATH.length) hold=9;
+  }
+  render(0);
+  function run(){ clearInterval(timer); timer=setInterval(frame,230); }
+  function stop(){ clearInterval(timer); timer=null; }
+  run();
+  document.addEventListener('visibilitychange',()=>document.hidden?stop():run());
+})();
 
 /* ---------- offline ---------- */
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js');
