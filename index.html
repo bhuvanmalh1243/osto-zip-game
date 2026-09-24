@@ -203,6 +203,29 @@ h1{font-weight:800;letter-spacing:-.035em;line-height:1.02}
 svg.path{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
 .gbtns{display:flex;gap:12px;margin-top:18px}
 .gbtns .btn{font-size:17px;padding:14px 22px}
+/* home: plain instruction chip where the prize line used to sit */
+.howtip{display:inline-flex;align-items:center;gap:clamp(8px,1.1vw,13px);font-weight:800;
+  font-size:min(1.85vw,2.3vh,19px);color:rgba(255,255,255,.9);letter-spacing:-.01em;
+  background:rgba(255,255,255,.06);border:1.5px solid var(--line);border-radius:99px;
+  padding:clamp(7px,1.3vh,13px) clamp(14px,2vw,24px)}
+.howtip em{font-style:normal;color:var(--pk)}
+.howtip .tipic{font-size:1.25em;line-height:1}
+
+/* mode 2 carries a ribbon so it reads as the bigger prize */
+.mode .mbadge{position:absolute;top:clamp(16px,2.6vh,26px);right:clamp(-64px,-7vw,-52px);
+  z-index:3;width:clamp(150px,17vw,200px);text-align:center;transform:rotate(45deg);
+  font-family:Marker,cursive;font-size:min(1.5vw,1.9vh,17px);letter-spacing:.03em;
+  color:var(--in);background:var(--mt);padding:clamp(5px,.9vh,8px) 0;
+  box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.mode.m2{box-shadow:0 0 0 1.5px rgba(95,214,164,.34),0 20px 64px rgba(95,214,164,.17)}
+
+/* US phone: fixed +1 country code welded to the field */
+.phwrap{display:flex;align-items:stretch}
+.phcc{display:grid;place-items:center;font-size:19px;font-weight:800;color:rgba(255,255,255,.72);
+  background:rgba(255,255,255,.11);border:1.5px solid var(--line);border-right:0;
+  border-radius:12px 0 0 12px;padding:0 15px;letter-spacing:.02em}
+.phwrap input{border-radius:0 12px 12px 0;flex:1 1 auto;min-width:0}
+.phwrap input.bad+.phcc,.phwrap.bad .phcc{border-color:#ff7a90}
 .hint{color:var(--mut);font-size:min(1.6vw,2vh,16px);font-weight:600;margin-top:min(1.4vh,12px);text-align:center}
 .count{position:absolute;inset:0;display:none;place-items:center;background:rgba(17,22,84,.92);z-index:9;border-radius:18px;font-size:120px;font-weight:800;color:var(--pk)}
 /* pre-game disclaimer */
@@ -602,11 +625,11 @@ l3 -929 785 -5 785 -5 6 -2885 c6 -3002 8 -3151 49 -3485 11 -88 20 -176 20
     </div>
     <div class="howside">
       <div class="howcap"><b>One</b> line<i>·</i><b>every</b> square<i>·</i><span class="nums">1&nbsp;→&nbsp;2&nbsp;→&nbsp;3&nbsp;→&nbsp;4</span> in order</div>
-      <div class="prize"><span class="gift">🎁</span><span class="ptxt">Top 3 finishers each day win <em>exciting Osto hampers</em></span></div>
+      <div class="howtip"><span class="tipic">☝</span><span>Drag in <em>one stroke</em> &mdash; don't lift your finger</span></div>
     </div>
   </div>
   <div class="playwrap"><button class="btn" id="startBtn">Tap to play</button></div>
-  <div class="hint">Takes about a minute. One entry per person for the whole event — 2 attempts.</div>
+  <div class="hint">Fill every square. Hit the numbers in order. That's the whole game.</div>
 </section>
 
 <!-- MODE SELECT -->
@@ -615,18 +638,19 @@ l3 -929 785 -5 785 -5 6 -2885 c6 -3002 8 -3151 49 -3485 11 -88 20 -176 20
   <h1 class="modeH1">How do you want to <em>win?</em></h1>
   <div class="modes">
     <button class="mode m1" data-mode="quick">
-      <span class="mtag">Fastest fingers</span>
+      <span class="mtag">Instant win</span>
       <span class="mic">⚡</span>
-      <b>Play &amp; win<br>exciting goodies</b>
-      <small>Straight into the puzzle. No forms.<br>Beat <em>9 seconds</em> and the goodie is yours.</small>
-      <span class="mgo">Let's go →</span>
+      <b>Play now,<br>win on the spot</b>
+      <small>No forms, no waiting — straight to the puzzle.<br>Beat <em>9 seconds</em> and collect your goodie <em>right now</em>.</small>
+      <span class="mgo">Play now →</span>
     </button>
     <button class="mode m2" data-mode="full">
-      <span class="mtag">Big prize</span>
+      <span class="mbadge">Biggest prize</span>
+      <span class="mtag">Gift of the day</span>
       <span class="mic">🎁</span>
-      <b>Play &amp; win<br>gift of the day</b>
-      <small>Get on the leaderboard.<br>Top 3 each day take home <em>Osto hampers</em>.</small>
-      <span class="mgo">Count me in →</span>
+      <b>Play for the<br>gift of the day</b>
+      <small>Takes about a minute.<br>Top 3 finishers each day win <em>exciting Osto hampers</em> &mdash; plus a shot at the daily leaderboard.</small>
+      <span class="mgo">I want the hamper →</span>
     </button>
   </div>
   <button class="btn ghost" data-home style="font-size:15px;padding:11px 20px;margin-top:6px">Back</button>
@@ -940,7 +964,7 @@ l3 -929 785 -5 785 -5 6 -2885 c6 -3002 8 -3151 49 -3485 11 -88 20 -176 20
     <div class="f"><label>Work email *</label><input id="fEmail" type="email" inputmode="email" autocomplete="off" autocapitalize="off" autocorrect="off" placeholder="you@yourcompany.com"><small class="fnote">Company address only — Gmail, Yahoo and temp inboxes won't be accepted.</small></div></div>
     <div class="row"><div class="f"><label>Company *</label><input id="fCompany" autocomplete="off"></div>
     <div class="f"><label>Role *</label><input id="fRole" autocomplete="off" placeholder="e.g. Founder, CTO"></div></div>
-    <div class="row"><div class="f"><label>Phone *</label><input id="fPhone" type="tel" inputmode="tel" autocomplete="off" placeholder="+1 555 123 4567"></div><div></div></div>
+    <div class="row"><div class="f"><label>Phone (US) *</label><div class="phwrap" id="phWrap"><span class="phcc">+1</span><input id="fPhone" type="tel" inputmode="numeric" autocomplete="off" maxlength="14" placeholder="(555) 123-4567"></div><small class="fnote">US number only &mdash; 10 digits.</small></div><div></div></div>
     <div class="err" id="err1"></div>
     <button class="btn" id="next1" style="width:100%">Next</button>
   </div>
@@ -2667,6 +2691,28 @@ let P=null; // current player
 function resetPlayer(){P={answers:{team_size:null,compliance_status:null,frameworks_12mo:[],security_headache:null},consent:false};
   $$('#form1 input').forEach(i=>{i.value='';i.classList.remove('bad')});$('#err1').textContent='';$('#err2').textContent='';
   $('#consent').classList.remove('sel');$$('.chip').forEach(c=>c.classList.remove('sel'))}
+/* ---------- US phone ---------- */
+const usDigits=v=>{let d=String(v||'').replace(/\D/g,'');if(d.length===11&&d[0]==='1')d=d.slice(1);return d};
+function usFormat(d){
+  if(d.length<=3)return d;
+  if(d.length<=6)return '('+d.slice(0,3)+') '+d.slice(3);
+  return '('+d.slice(0,3)+') '+d.slice(3,6)+'-'+d.slice(6,10);
+}
+function usPhoneIssue(v){
+  const d=usDigits(v);
+  if(!d) return 'Please enter your phone number.';
+  if(d.length!==10) return 'A US number is 10 digits — you entered '+d.length+'.';
+  if(/^[01]/.test(d)) return 'US area codes never start with 0 or 1.';
+  if(/^\d{3}[01]/.test(d)) return "That isn't a valid US number.";
+  if(/^(\d)\1{9}$/.test(d)) return "That isn't a valid US number.";
+  if(/^[2-9]11/.test(d)) return "That isn't a valid US area code.";   /* 211, 311 … 911 are service codes */
+  return '';
+}
+$('#fPhone').addEventListener('input',e=>{
+  const el=e.target, d=usDigits(el.value).slice(0,10);
+  el.value=usFormat(d); el.classList.remove('bad');
+});
+
 const freed=()=>LS.get('oz_free',{});
 function myRecs(email){const f=freed()[email]||0;return recs().filter(r=>r.email===email&&r.ts>f)}
 function attemptsUsed(email){return myRecs(email).length}
@@ -2714,7 +2760,9 @@ $('#next1').onclick=()=>{
   let bad=[];[['fName',v.name],['fCompany',v.company],['fRole',v.role],['fPhone',v.phone]].forEach(([id,x])=>{$('#'+id).classList.toggle('bad',!x);if(!x)bad.push(id)});
   const eIssue=emailIssue(v.email);$('#fEmail').classList.toggle('bad',!!eIssue);
   if(bad.length){$('#err1').textContent='Please fill in the highlighted fields.';return}
-  if((v.phone.match(/\d/g)||[]).length<7){$('#fPhone').classList.add('bad');$('#err1').textContent='Please enter a valid phone number.';return}
+  const pIssue=usPhoneIssue(v.phone);
+  if(pIssue){$('#fPhone').classList.add('bad');$('#err1').textContent=pIssue;return}
+  v.phone='+1'+usDigits(v.phone);
   if(eIssue){$('#err1').textContent=eIssue;return}
   const used=attemptsUsed(v.email);
   if(used>=MAX_ATTEMPTS){
